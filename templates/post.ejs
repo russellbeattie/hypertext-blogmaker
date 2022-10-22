@@ -1,0 +1,29 @@
+<%_
+
+    let postList = Object.keys(posts);
+    let current = postList.indexOf(page.filename);
+
+    let prev = postList[current - 1];
+    let next = postList[current + 1];
+
+_%>
+<article class="post">
+  <p class="post-date">
+    <%- page.postDate %>
+  </p>
+  <%- page.bodyHTML %>
+  <nav class="post-paging">
+      <ul>
+          <li class="previous">
+          <%_ if (next){ _%>
+              <a href="<%- settings.root + 'posts/' + next %>">&#x25C2; <%- posts[next].title %></a>
+          <%_ } _%>
+          </li>
+          <li class="next">
+          <%_ if (prev){ _%>
+              <a href="<%- settings.root + 'posts/' + prev %>"><%- posts[prev].title %> &#x25B8;</a>
+          <%_ } _%>
+          </li>
+      </ul>
+  </nav>
+</article>

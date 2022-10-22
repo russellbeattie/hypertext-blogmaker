@@ -1,0 +1,19 @@
+{
+  "title": "Sample Hypertext Blog",
+  "description": "This is my blog.",
+  "home_page_url": "http://example.com/blog",
+  "feed_url": "http://example.com/blog/rss.xml",
+  "icon": "http://example.com/blog/images/bluesky.jpg",
+  "favicon": "http://example.com/blog/",
+  "author": {
+    "name": "Author Name",
+    "url": "http://example.com",
+    "avatar": "http://example.com/blog/images/bluesky.jpg"
+  },
+  "initials": "AN",
+  "twitter": "@example",
+  "copyright": "© 2022 Author Name",
+  "analytics": "UA-XXXXXX-X",
+  "root": "/blog/",
+  "siteheader": "<span>Example</span> Blog"
+}

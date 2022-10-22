@@ -1,0 +1,35 @@
+<article class="archive-page">
+    <%- page.bodyHTML %>
+    <nav class="archive-menu">
+    <% 
+        let daymonth = '';
+
+        Object.keys(posts).forEach(function(filename){ 
+            let post = posts[filename];
+            let dm = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(post.dateCreated);
+            if(dm !== daymonth){
+                if(daymonth !== ''){
+                %>
+        </ul>
+                <%
+                }
+
+                daymonth = dm;
+            %>
+                <h3><%- dm %></h3>
+                <ul class="posts-list">
+            <%
+
+            }
+        %>
+        <li>
+                <span class="date"><%= post.postDate %></span>
+                <a href="<%- settings.root + 'posts/' + filename %>"><%- post.title %></a>
+
+        </li>
+    <% 
+        }); 
+    %>
+        </ul>
+    </nav>
+</article>

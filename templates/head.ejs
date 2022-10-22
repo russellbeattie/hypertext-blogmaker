@@ -1,0 +1,67 @@
+<%_
+    let title = settings.title;
+    if (page.title) {
+        title = page.title + ' - ' + title;
+    }
+
+    let imageUrl = settings.icon;
+    if(page.imageFullUrl){
+      imageUrl = page.imageFullUrl;
+    }
+
+
+_%>
+<meta charset="utf-8" />
+
+<title><%= title %></title>
+
+<meta name="author" content="<%= settings.author.name %>">
+<meta name="description" content="<%= page.description || settings.description %>">
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="<%= page.title %>">
+<meta property="og:url" content="<%- settings.home_page_url + page.relative %>">
+<meta property="og:site_name" content="<%= settings.home_page_url %>">
+<meta property="og:image" content="<%- imageUrl %>">
+
+<meta property="article:published_time" content="<%- page.dateCreated.toISOString() %>">
+<meta property="article:modified_time" content="<%- page.dateModified.toISOString() %>">
+<meta property="article:author" content="<%= settings.author.name %>">
+<meta property="article:tag" content="blog">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="<%- imageUrl %>">
+<meta name="twitter:site" content="<%= settings.twitter %>">
+
+<link rel="stylesheet" href="<%- settings.root + 'css/style.css' %>">
+<link rel="stylesheet" href="<%- settings.root + 'css/highlightjs.css' %>">
+<link rel="stylesheet" href="<%- settings.root + 'css/webmention.css' %>">
+<link rel="icon" href="<%- settings.root + 'favicon.ico' %>" />
+
+<link rel="alternate" type="application/rss+xml" title="<%= settings.title %>" href="<%- settings.feed_url %>" />
+<link rel="alternate" type="application/feed+json" title="<%= settings.title %>" href="<%- settings.home_page_url + 'feed.json' %>" />
+
+<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "<%= title %>",
+        "description": "<%= page.description || settings.description %>",
+        "url": "<%- settings.home_page_url + page.relative %>",
+        "image": "<%- imageUrl %>",
+        "dateCreated": "<%- page.dateCreated.toISOString() %>",
+        "dateModified": "<%- page.dateModified.toISOString() %>"
+        "datePublished": "<%- page.dateCreated.toISOString() %>",
+        "author":
+        {
+            "@type": "Person",
+            "name": "<%= settings.author.name %>",
+            "url": "<%= settings.author.url %>"
+        }
+    }
+</script>
+
+<link rel="webmention" href="https://webmention.io/<%- settings.author.url %>/webmention" />
+<link rel="pingback" href="https://webmention.io/<%- settings.author.url %>/xmlrpc" />

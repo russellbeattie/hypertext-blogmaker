@@ -1,0 +1,25 @@
+{
+  "name": "hypertext-blogmaker",
+  "version": "1.0.0",
+  "description": "HTML Document blog generator",
+  "main": "blogmaker.js",
+  "scripts": {
+    "build": "node blogmaker.js build",
+    "clean": "node blogmaker.js clean",
+    "serve": "node blogmaker.js serve",
+    "start": "node blogmaker.js serve"
+  },
+  "type": "module",
+  "keywords": [
+    "blog",
+    "blog generator"
+  ],
+  "author": "Russell Beattie <russ@russellbeattie.com> (http://www.russellbeattie.com/)",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "3.5.3",
+    "ejs": "3.1.8",
+    "jsdom": "20.0.1",
+    "jsonfeed-to-rss": "3.0.6"
+  }
+}

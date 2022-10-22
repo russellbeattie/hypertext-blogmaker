@@ -1,0 +1,21 @@
+<article class="home-page">
+    <%- page.bodyHTML %>
+    <nav class="home-menu">
+        <h3>Latest Posts</h3>
+        <ul class="posts-list">
+    <%_
+        Object.keys(posts).forEach(function(filename, index){
+            let post = posts[filename];
+            if(index >= 5){ return; }
+    _%>
+        <li>
+            <span class="date"><%= post.postDate %></span>
+            <a href="<%- settings.root + 'posts/' + filename %>"><%- post.title %></a>
+        </li>
+    <% }); %>
+        </ul>
+        <p class="all-posts-link">
+            <a href="<%- settings.root + 'archive.html' %>">All Posts</a>
+        </p>
+    </nav>
+</article>

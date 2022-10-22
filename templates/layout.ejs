@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <%- include('head'); -%>
+  </head>
+  <body>
+  <%- include('header'); -%>
+  <main>
+   <% if(page.type == 'post') { %>
+      <%- include('post'); -%>
+   <% } %>
+   <% if(page.type == 'page') { %>
+      <%- include('page'); -%>
+   <% } %>
+     <p id="webmentions"></p>
+  </main> 
+  <%- include('footer'); -%>
+  <%- include('scripts'); -%>
+  </body>
+</html>

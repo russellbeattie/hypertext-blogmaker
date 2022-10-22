@@ -1,0 +1,9 @@
+<% if(page.filename == 'index.html'){ %>
+  <%- include('index'); -%>
+<% } else if(page.filename == 'archive.html'){ %>
+  <%- include('archive'); -%>
+<% } else { %>
+<article class="page">
+  <%- page.bodyHTML %>
+</article>
+<% } %>
