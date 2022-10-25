@@ -6,37 +6,40 @@ import {fileURLToPath, URL} from 'url';
 import {JSDOM} from 'jsdom';
 import jsonfeedToRSS from 'jsonfeed-to-rss';
 import chokidar from 'chokidar';
+import process from 'node:process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-let settings = JSON.parse(fs.readFileSync('./settings.json').toString());
+const WORKING_DIR = process.cwd();
+const SCRIPT_DIR = __dirname;
+
+const SETTINGS_FILE = path.join(WORKING_DIR, 'settings.json');
+
+let settings = JSON.parse(fs.readFileSync(SETTINGS_FILE).toString());
+
+const DOCS_DIR = path.join(WORKING_DIR, settings.docs_dir_in) + '/';
+const WEB_DIR = path.join(WORKING_DIR, settings.web_dir_out) + '/';
+const BLOG_DIR = path.join(WEB_DIR, settings.root);
+const ASSETS_DIR = path.join(WORKING_DIR, settings.assets_dir) + '/';
+const TEMPLATES_DIR = path.join(WORKING_DIR, settings.templates_dir) + '/';
 
 const POSTS_DIR_NAME = 'posts/';
 
-const DOCS_DIR = './docs/';
-const TEMPLATES_DIR = './templates/';
-const ASSETS_DIR = './assets/'
-const WEB_DIR = './website/';
-const BLOG_DIR = './' + path.join(WEB_DIR, settings.root);
-
 console.log(`
-DOCS_DIR = ${DOCS_DIR}
-TEMPLATES_DIR = ${TEMPLATES_DIR}
-ASSETS_DIR = ${ASSETS_DIR}
-WEB_DIR = ${WEB_DIR}
-BLOG_DIR = ${BLOG_DIR}
+  DOCS_DIR = ${DOCS_DIR}
+  WEB_DIR = ${WEB_DIR}
+  BLOG_DIR = ${BLOG_DIR}
+  TEMPLATES_DIR = ${TEMPLATES_DIR}
+  ASSETS_DIR = ${ASSETS_DIR}
 `);
-
 
 let pageData = {};
 let posts = {};
 
 let layoutTemplate = fs.readFileSync(TEMPLATES_DIR + 'layout.ejs').toString();
 
-
 /* *********************** */
-
 
 const args = process.argv.slice(2)
 const command = args[0]
@@ -48,6 +51,19 @@ if(command == 'serve'){
   fs.rmSync(BLOG_DIR, { recursive: true, force: true });
 } else {
   build();
+}
+
+/* *********************** */
+
+function serve(port) {
+  
+  build();
+
+  startServer(port)
+    
+  chokidar.watch([DOCS_DIR, ASSETS_DIR, TEMPLATES_DIR, SETTINGS_FILE]).on('change', async (path, _) => {
+    build();
+  })
 }
 
 /* *********************** */
@@ -95,92 +111,17 @@ function build(){
   });
   
 
-
-  console.log('writing pages to ' + BLOG_DIR);
-
   // write out files
+  console.log('writing pages to ' + BLOG_DIR);
   createPages()
 
   console.log('writing feeds');
-
   createFeeds();
 
+  // done
   console.log('finished');
 
 }
-
-/* *********************** */
-
-
-function serve(port) {
-  
-  build();
-
-  startServer(port)
-    
-  chokidar.watch([DOCS_DIR, ASSETS_DIR, TEMPLATES_DIR]).on('change', async (path, _) => {
-    build();
-  })
-}
-
-
-function startServer(port) {
-
-    console.log('Server starting on http://localhost:' + port);
-
-  let mimetypes = {
-    '.js': 'application/javascript',
-    '.json': 'application/json',
-    '.ttf': 'application/octet-stream',
-    '.xml': 'application/xml',
-    '.jpg': 'image/jpeg',
-    '.png': 'image/png',
-    '.svg': 'image/svg+xml',
-    '.ico': 'image/x-icon',
-    '.css': 'text/css',
-    '.html': 'text/html'
-  };
-
-    http.createServer(function (req, res) {
-        
-        let pathname = req.url;
-        console.log(pathname);
-
-        let filepath = req.url;
-
-        if(filepath == '/'){
-          res.writeHead(301, { 'Location': settings.root});
-          res.end('<h1>301: Redirect</h1>');
-          return;
-        }
-
-        if (req.url.endsWith('/')) {
-          filepath += 'index.html';
-        }
-
-        if(req.url.includes('.') == false && req.url.endsWith('/') == false){
-          filepath += '/index.html';
-        }
-
-        fs.readFile(WEB_DIR + filepath, function (err, data) {
-          if (err) {
-              res.writeHead(404);
-              res.end('<h1>404: Page not found</h1>');
-              return;
-          }
-
-          let contentType = mimetypes[path.extname(filepath)];
-          if(contentType){
-            res.writeHead(200, { 'Content-Type': contentType });
-          } else {
-            res.writeHead(200);
-          }
-          res.end(data);
-
-        })
-      }).listen(port);
-}
-
 
 /* *********************** */
 
@@ -248,6 +189,8 @@ function parsePage(filename){
 
   if($('article')){
     page.bodyHTML = $('article').innerHTML;
+  } else if($('main')){
+    page.bodyHTML = $('main').innerHTML;
   } else {
     page.bodyHTML = $('body').innerHTML;
   }
@@ -260,10 +203,20 @@ function parsePage(filename){
 
 }
 
+/* *********************** */
+
 function createPages(){
 
-  let postList = Object.keys(pageData).filter(filename => pageData[filename].type == 'post').sort().reverse();
+  let postList = Object.keys(pageData).filter(filename => pageData[filename].type == 'post');
   
+  postList.sort(function(a, b){
+    if(pageData[a].dateCreated > pageData[b].dateCreated){ return 1; }
+    if(pageData[a].dateCreated < pageData[b].dateCreated){ return -1; }
+    if(pageData[a].dateCreated == pageData[b].dateCreated){ return 0; }
+  });
+
+  postList.reverse();
+
   postList.forEach(function(filename){
     posts[filename] = {
       filename: filename,
@@ -370,4 +323,63 @@ function getDateTimeText(dt){
 
   return dateTime;
 
+}
+
+/* *********************** */
+
+function startServer(port) {
+
+    console.log('Server starting on http://localhost:' + port);
+
+  let mimetypes = {
+    '.js': 'application/javascript',
+    '.json': 'application/json',
+    '.ttf': 'application/octet-stream',
+    '.xml': 'application/xml',
+    '.jpg': 'image/jpeg',
+    '.png': 'image/png',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon',
+    '.css': 'text/css',
+    '.html': 'text/html'
+  };
+
+    http.createServer(function (req, res) {
+        
+        let pathname = req.url;
+        console.log(pathname);
+
+        let filepath = req.url;
+
+        if(filepath == '/'){
+          res.writeHead(301, { 'Location': settings.root});
+          res.end('<h1>301: Redirect</h1>');
+          return;
+        }
+
+        if (req.url.endsWith('/')) {
+          filepath += 'index.html';
+        }
+
+        if(req.url.includes('.') == false && req.url.endsWith('/') == false){
+          filepath += '/index.html';
+        }
+
+        fs.readFile(WEB_DIR + filepath, function (err, data) {
+          if (err) {
+              res.writeHead(404);
+              res.end('<h1>404: Page not found</h1>');
+              return;
+          }
+
+          let contentType = mimetypes[path.extname(filepath)];
+          if(contentType){
+            res.writeHead(200, { 'Content-Type': contentType });
+          } else {
+            res.writeHead(200);
+          }
+          res.end(data);
+
+        })
+      }).listen(port);
 }

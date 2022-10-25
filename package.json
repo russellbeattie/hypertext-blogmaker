@@ -9,6 +9,9 @@
     "serve": "node blogmaker.js serve",
     "start": "node blogmaker.js serve"
   },
+  "bin": {
+    "blogmaker": "blogmaker-cli.mjs"
+  },
   "type": "module",
   "keywords": [
     "blog",
