@@ -98,14 +98,14 @@ function build(){
 
   // read/process pages into memory
   fs.readdirSync(DOCS_DIR, {withFileTypes: true}).forEach((file) => {
-    if(file.name.startsWith('.') || file.isDirectory()){ return; }
+    if(file.name.startsWith('.') || file.name.endsWith('.html') == false || file.isDirectory()){ return; }
     console.log('  ' + DOCS_DIR + file.name);
     parsePage(file.name);
   });
 
   // read/process posts into memory
   fs.readdirSync(DOCS_DIR + POSTS_DIR_NAME, {withFileTypes: true}).forEach((file) => {
-    if(file.name.startsWith('.') || file.isDirectory()){ return; }
+    if(file.name.startsWith('.') || file.name.endsWith('.html') == false || file.isDirectory()){ return; }
     console.log('  ' + DOCS_DIR + POSTS_DIR_NAME + file.name);
     parsePage(POSTS_DIR_NAME + file.name);
   });
@@ -180,7 +180,11 @@ function parsePage(filename){
 
   if($('img')){
     page.imageUrl = $('img').src;
-    page.imageFullUrl = (new URL(page.imageUrl, settings.home_page_url)).toString();
+    let postdir = '';
+    if(page.type == 'post'){
+      postdir = POSTS_DIR_NAME;
+    }
+    page.imageFullUrl = (new URL(page.imageUrl, settings.home_page_url + postdir)).toString();
   }
 
   if($('.post-date')){
