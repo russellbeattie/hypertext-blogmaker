@@ -1,4 +1,11 @@
 {
+  "docs_dir_in": "./docs",
+  "web_dir_out": "./website",
+  "assets_dir": "./assets",
+  "templates_dir": "./templates",
+  
+  "root": "/notes/",
+
   "title": "Sample Hypertext Blog",
   "description": "This is my blog.",
   "home_page_url": "http://example.com/blog",
@@ -14,6 +21,5 @@
   "twitter": "@example",
   "copyright": "© 2022 Author Name",
   "analytics": "UA-XXXXXX-X",
-  "root": "/blog/",
   "siteheader": "<span>Example</span> Blog"
 }
