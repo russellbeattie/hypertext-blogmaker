@@ -36,6 +36,7 @@ console.log(`
 
 let pageData = {};
 let posts = {};
+let postList = [];
 
 let layoutTemplate = fs.readFileSync(TEMPLATES_DIR + 'layout.ejs').toString();
 
@@ -211,7 +212,7 @@ function parsePage(filename){
 
 function createPages(){
 
-  let postList = Object.keys(pageData).filter(filename => pageData[filename].type == 'post');
+  postList = Object.keys(pageData).filter(filename => pageData[filename].type == 'post');
   
   postList.sort(function(a, b){
     if(pageData[a].dateCreated > pageData[b].dateCreated){ return 1; }
@@ -261,7 +262,7 @@ function createFeeds(){
     "items": [],
   };
 
-  Object.keys(pageData).forEach(function(filename){
+  postList.forEach(function(filename){
     let page = pageData[filename];
     let item = {};
 
@@ -296,7 +297,8 @@ function applyTemplates(page){
   let data = {
     page: page,
     settings: settings,
-    posts: posts
+    posts: posts,
+    postList: postList
   };
 
   let htmlText = '';
