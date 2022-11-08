@@ -7,6 +7,8 @@ import {JSDOM} from 'jsdom';
 import jsonfeedToRSS from 'jsonfeed-to-rss';
 import chokidar from 'chokidar';
 import process from 'node:process';
+import dircompare from 'dir-compare';
+import {exec, execSync} from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +22,7 @@ let settings = JSON.parse(fs.readFileSync(SETTINGS_FILE).toString());
 
 const DOCS_DIR = path.join(WORKING_DIR, settings.docs_dir_in) + '/';
 const WEB_DIR = path.join(WORKING_DIR, settings.web_dir_out) + '/';
+const WEB_SYNC_DIR = path.join(WORKING_DIR, settings.web_sync_dir) + '/';
 const BLOG_DIR = path.join(WEB_DIR, settings.root);
 const ASSETS_DIR = path.join(WORKING_DIR, settings.assets_dir) + '/';
 const TEMPLATES_DIR = path.join(WORKING_DIR, settings.templates_dir) + '/';
@@ -29,6 +32,7 @@ const POSTS_DIR_NAME = 'posts/';
 console.log(`
   DOCS_DIR = ${DOCS_DIR}
   WEB_DIR = ${WEB_DIR}
+  WEB_SYNC_DIR = ${WEB_SYNC_DIR}
   BLOG_DIR = ${BLOG_DIR}
   TEMPLATES_DIR = ${TEMPLATES_DIR}
   ASSETS_DIR = ${ASSETS_DIR}
@@ -42,14 +46,16 @@ let layoutTemplate = fs.readFileSync(TEMPLATES_DIR + 'layout.ejs').toString();
 
 /* *********************** */
 
-const args = process.argv.slice(2)
-const command = args[0]
+const args = process.argv.slice(2);
+const command = args[0];
 
 if(command == 'serve'){
   serve(args[1] ? parseInt(args[1]) : 3000)
 } else if(command == 'clean'){
   console.log('cleaning ' + BLOG_DIR);
   fs.rmSync(BLOG_DIR, { recursive: true, force: true });
+} else if(command == 'sync') {
+  syncToS3();
 } else {
   build();
 }
@@ -388,4 +394,63 @@ function startServer(port) {
 
         })
       }).listen(port);
+}
+
+
+/* *********************** */
+
+function syncToS3(){
+
+  let syncFlag = false;
+
+  let srcPath = path.join(WEB_DIR, settings.root);
+  let syncPath = path.join(WEB_SYNC_DIR, settings.root);
+
+  const options = { 
+    compareContent: true,
+    excludeFilter: '.*'
+  };
+
+  const res = dircompare.compareSync(srcPath, syncPath, options);
+  
+  res.diffSet.forEach(dif => {
+
+    if(dif.state !== 'equal'){
+
+      let filename = path.join(dif.relativePath, dif.name1);
+      
+      let srcFilePath = path.join(srcPath, filename);
+      let destFilePath = path.join(syncPath, filename);
+      
+      console.log(srcFilePath);
+      
+      fs.cpSync(srcFilePath, destFilePath, {recursive: true, force: true});
+
+      syncFlag = true;
+
+    }
+
+  });
+
+  if(syncFlag){
+
+    let syncCommand = `aws s3 ${syncPath} ${settings.s3_bucket} | awk '{print $2;}' | xargs aws cloudfront create-invalidation --distribution-id ${settings.dist_id} --paths`;
+      
+    console.log('\n' + syncCommand + '\n');
+    
+    exec(syncCommand, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        return;
+      }
+      if(stderr){
+        console.error(stderr);
+        return;
+      }
+      console.log(stdout);
+    });
+    
+  }
+
+
 }

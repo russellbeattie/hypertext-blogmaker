@@ -3,6 +3,10 @@
   "web_dir_out": "./website",
   "assets_dir": "./assets",
   "templates_dir": "./templates",
+
+  "web_sync_dir": "./websync",
+  "s3_bucket": "s3://mybucket/blog",
+  "dist_id": "CLOUDFRONTID",
   
   "root": "/notes/",
 

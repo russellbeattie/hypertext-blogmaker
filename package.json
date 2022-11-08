@@ -21,6 +21,7 @@
   "license": "MIT",
   "dependencies": {
     "chokidar": "3.5.3",
+    "dir-compare": "4.0.0",
     "ejs": "3.1.8",
     "jsdom": "20.0.1",
     "jsonfeed-to-rss": "3.0.6"
